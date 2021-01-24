@@ -88,5 +88,6 @@ class DatabaseHelper {
     for (var i = 0; i < count; i++) {
       noteList.add(Note.fromMapObject(notemapList[i]));
     }
+    return noteList;
   }
 }
