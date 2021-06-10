@@ -1,3 +1,5 @@
+import 'package:expansion_card/expansion_card.dart';
+import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:task_doer/Note.dart';
@@ -15,7 +17,8 @@ class _NoteListState extends State<NoteList> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   List<Note> noteList;
   int count = 0;
-
+  Note note;
+  final GlobalKey<ExpansionTileCardState> cardA = new GlobalKey();
   @override
   Widget build(BuildContext context) {
 
@@ -25,11 +28,13 @@ class _NoteListState extends State<NoteList> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task Doer'),
-        backgroundColor: Colors.purple,
+        title: Text('100 hours work of week',style:
+        TextStyle( fontFamily: 'poppins_regular',),),
+        backgroundColor: Color(0Xff055a8c),
       ),
-      body: getNoteListView(),
+      body: Container(child: getNoteListView()),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0Xff055a8c),
         child: Icon(Icons.add),
         onPressed: () {
           navigateToDetailsScreen(Note('', '', 2), 'Add Note');
@@ -54,32 +59,64 @@ class _NoteListState extends State<NoteList> {
     return ListView.builder(
       itemCount: count,
       itemBuilder: (context, position) {
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          color:Colors.white,
-          elevation: 4.0,
-          child: ListTile(
+        return noteList[position].title==null?Container(child: Image.asset("assets/bg_home.jpg")):
+        Padding(
+        padding: const EdgeInsets.all(8.0),
+          child:
+            ExpansionTileCard(
+              shadowColor: Colors.black,
+              baseColor: Colors.cyan[50],
+              expandedColor: Colors.white,
+
+              // key: cardA,
          title: Text(this.noteList[position].title,
          style: TextStyle(
-           color:Colors.black,
-           fontWeight: FontWeight.w700,
-           fontSize: 25.0
-         ),),
-            subtitle: Text(this.noteList[position].date,
-                style: TextStyle(
-                    color:Colors.black87,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20.0
-                )),
-            trailing: GestureDetector(
-              child: Icon(Icons.open_in_new),
-              onTap: (){navigateToDetailsScreen(this.noteList[position],'Edit Todo');}
-            ),
+               fontFamily: 'poppins_regular',
+             fontSize: 17.5,
+             color:Colors.black,
+             fontWeight: FontWeight.w600,
 
-          ),
-        );
+         ),),
+              subtitle: Text(this.noteList[position].date,
+                  style: TextStyle(
+                      fontFamily: 'poppins_regular',
+                      color:Colors.black87,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400
+                  )),
+              children: [
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left:18.0),
+                      child: Text(this.noteList[position].description,
+                          style: TextStyle(
+                              fontFamily: 'poppins_regular',
+                              color:Colors.black87,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w400
+                          )),
+                    ),
+                    Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8,8,16,8),
+                      child: GestureDetector(
+                          child: Icon(Icons.edit,size: 22,),
+                          onTap: (){
+                            setState(() {
+                              debugPrint('save button click');
+                              // _delete();
+                            });
+                            navigateToDetailsScreen(this.noteList[position],'Edit Todo');
+                          }
+                      ),
+                    ),
+                  ],
+                )
+
+              ],
+        ),
+          );
       },
     );
   }
@@ -95,5 +132,28 @@ class _NoteListState extends State<NoteList> {
         });
       });
     });
+  }
+
+  // void _delete() async {
+  //   // moveToLastScreen();
+  //
+  //   if (note.id == null) {
+  //     _showAlertDailog('Status', 'Frist add a note');
+  //   }
+  //
+  //   int result = await databaseHelper.deleteNote(note.id);
+  //   if (result != 0) {
+  //     _showAlertDailog('Status', 'Note Deleted Successfully');
+  //   } else {
+  //     _showAlertDailog('Status', 'Error');
+  //   }
+  // }
+
+  void _showAlertDailog(String title, String message) {
+    AlertDialog alertDialog = AlertDialog(
+      title: Text(title),
+      content: Text(message),
+    );
+    showDialog(context: context, builder: (_) => alertDialog);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:task_doer/Database_helper.dart';
 import '../Note.dart';
@@ -20,44 +21,45 @@ class _NoteDetialsState extends State<NoteDetials> {
   String AppBarTitle;
   Note note;
   static var _priorities = ['High', 'Low'];
+  bool _isVisible = true;
 
   _NoteDetialsState(this.note, this.AppBarTitle);
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.title;
     titleController.text = note.title;
     descriptionController.text = note.description;
-    return WillPopScope(
-        onWillPop: () {
-          moveToLastScreen();
-        },
-        child: Scaffold(
-          appBar: AppBar(
-              title: Text(AppBarTitle),
-              backgroundColor: Colors.purple,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  moveToLastScreen();
-                },
-              )),
-          body: Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
+    return Form(
+      key: _formKey,
+      child: WillPopScope(
+          onWillPop: () {
+            moveToLastScreen();
+          },
+          child: Scaffold(
+            appBar: AppBar(
+                title: Text(AppBarTitle),
+                backgroundColor: Color(0Xff055a8c),
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back_ios_outlined),
+                  onPressed: () {
+                    moveToLastScreen();
+                  },
+                )),
+            body: Padding(
+                padding: EdgeInsets.all(10.0),
                 child: ListView(
                   children: <Widget>[
                     Padding(
                         padding: EdgeInsets.all(10.0),
-                        child: new ListTile(
-                            leading: const Icon(Icons.low_priority),
+                        child:
+                         ListTile(
+                            // leading: const Icon(Icons.low_priority),
                             title: DropdownButton(
+                              isExpanded: true,
                               items:
                                   _priorities.map((String dropDownStringItem) {
                                 return DropdownMenuItem<String>(
@@ -73,64 +75,85 @@ class _NoteDetialsState extends State<NoteDetials> {
                               },
                             ))),
 
-            ///
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child:TextField(
+                   SizedBox(height: 10,),
+
+
+                   Padding(
+                padding: EdgeInsets.all(10.0),
+                child:TextFormField(
                 controller: titleController,
                 style: textStyle,
                 onChanged: (value){
                   updateTitle();
                 },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter title';
+                    }
+                    return null;
+                  },
                 decoration: InputDecoration(
-                  labelText: 'title',
+                  hintText: 'title',
                   labelStyle: textStyle,
-                  icon: Icon(Icons.title)
+                  // icon: Icon(Icons.title)
+                ),
                 ),
               ),
-            ),
-
-                    ///
+                    // Image.asset("assets/bg_home.jpg"),
+                    SizedBox(height: 10,),
                     Padding(
                       padding: EdgeInsets.all(10.0),
-                      child:TextField(
+                      child:TextFormField(
                         controller: descriptionController,
                         style: textStyle,
                         onChanged: (value){
                           updateDescription();
                         },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter description';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
-                            labelText: 'Description',
+                            hintText: 'Description',
                             labelStyle: textStyle,
-                            icon: Icon(Icons.details)
+                            // icon: Icon(Icons.details)
                         ),
                       ),
                     ),
-            Padding(
-              padding: EdgeInsets.all(10.0),
-              child:
-           Row(
-             children: <Widget>[
-               Expanded(child: RaisedButton(
+                    SizedBox(height: 10,),
+
+                     Padding(
+                padding: EdgeInsets.all(10.0),
+                child:
+             Row(
+               children: <Widget>[
+                 Expanded(child: RaisedButton(
                  textColor: Colors.white,
-                 color: Colors.green,
+                 color: Color(0Xff055a8c),
                  padding: EdgeInsets.all(10.0),
                  child: Text('save',textScaleFactor: 1.5,),
-               onPressed: (){
-                   setState(() {
-                     debugPrint('save button click');
-                     _save();
-                   });
-
-               },
-               )
-               ),
-               Container(
+                 onPressed: (){
+                   if (_formKey.currentState.validate()) {
+                     setState(() {
+                       debugPrint('save button click');
+                       _save();
+                     });
+                   }
+                 },
+                 )
+                 ),
+                 Container(
                  width: 5.0,
-               ),
-               Expanded(child: RaisedButton(
-                 textColor: Colors.white,
-                 color: Colors.green,
+                 ),
+                 Visibility(
+                 visible: _isVisible,
+                 child:
+                 Expanded(child: RaisedButton(
+
+                 textColor: Colors.black,
+                 color: Colors.white,
                  padding: EdgeInsets.all(10.0),
                  child: Text('delete',textScaleFactor: 1.5,),
                  onPressed: (){
@@ -140,16 +163,16 @@ class _NoteDetialsState extends State<NoteDetials> {
                    });
 
                  },
-               )
-               )
-             ],
-           )   ,
-            )
+                 )
+                 ))
+               ],
+             )   ,
+              )
 
                   ],
-                ),
-              )),
-        ));
+                )),
+          )),
+    );
   }
 
   void _save() async {
@@ -221,14 +244,36 @@ class _NoteDetialsState extends State<NoteDetials> {
   }
 
   void updateDescription() {
-    note.description = titleController.text;
+    note.description = descriptionController.text;
   }
 
   void _showAlertDailog(String title, String message) {
-    AlertDialog alertDialog = AlertDialog(
-      title: Text(title),
-      content: Text(message),
+    // AlertDialog alertDialog = AlertDialog(
+    //   title: Text(title),
+    //   content: Text(message),
+    // );
+    // showDialog(context: context, builder: (_) => alertDialog);
+
+    showAnimatedDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return ClassicGeneralDialogWidget(
+          titleText: title,
+          contentText: message,
+          onPositiveClick: () {
+            Navigator.of(context).pop();
+          },
+          onNegativeClick: () {
+            Navigator.of(context).pop();
+          },
+        );
+      },
+      animationType: DialogTransitionType.size,
+      curve: Curves.fastOutSlowIn,
+      duration: Duration(seconds: 1),
     );
-    showDialog(context: context, builder: (_) => alertDialog);
   }
+
+
 }

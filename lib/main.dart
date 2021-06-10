@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Task Doer',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple
+        primaryColor: Color(0Xff055a8c),
       ),
       home: NoteList(),
     );
